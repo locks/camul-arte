@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-type" content="text/html;">
+  <title>O Jardim</title>
+  
+  <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="js/Three.js"></script>
+  <script type="text/javascript" src="js/Detector.js"></script>
+  <script type="text/javascript" src="js/Stats.js"></script>
+  <script type="text/javascript" src="js/ColladaLoader.js"></script>
+  <script type="text/javascript" src="js/ShaderExtras.js"></script>
+  
+  <style type="text/css" media="screen">
+    html, body { border: 0; padding: 0; margin: 0; }
+    body { background-color: #666; }
+  </style>
+  
+</head>
+
+<body>
+  
+  <audio src="audio/waterfall.ogg" autoplay="true" loop="true"> </audio>
+  <audio src="audio/leaves.ogg"    autoplay="true" loop="true"> </audio>
+  <audio src="audio/birds.ogg"     autoplay="true" loop="true"> </audio>
+  <script type="text/javascript" charset="utf-8">
+    document.getElementsByTagName("audio")[0].volume = 0.4
+  </script>
+
+  <script type="text/javascript" charset="utf-8">
+    
+    if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+    
+    var container, stats;
+    
+    var camera, scene, renderer, objects;
+    var particleLight, pointLight;
+    var dae, skin;
+    var roses = [];
+    
+    init();
+    animate();
+    
+    function init() {
+    
+      container = document.createElement( 'div' );
+      document.body.appendChild( container );
+    
+      scene = new THREE.Scene();
+    
+      camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+      camera.position.set( 2, 2, 3 );
+      scene.add( camera );
+    
+      // Lights
+    
+      scene.add( new THREE.AmbientLight( 0xeeeeee ) );
+    
+      var directionalLight = new THREE.DirectionalLight(/*Math.random() * 0xffffff*/0xeeeeee );
+      directionalLight.position.x =  1;
+      directionalLight.position.y = -1;
+      directionalLight.position.z =  1;
+      directionalLight.position.normalize();
+      scene.add( directionalLight );
+    
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    
+      container.appendChild( renderer.domElement );
+    
+      stats = new Stats();
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.top      = '0px';
+      container.appendChild( stats.domElement );
+      
+      // models
+      
+      var jsonm = new THREE.JSONLoader();
+
+      
+      jsonm.load('./models/flamboyant/flamboyant.js', function (geometry) {
+        var material = new THREE.MeshFaceMaterial();
+      
+        var mesh = new THREE.Mesh( geometry, material );
+        
+        mesh.scale.x = mesh.scale.y = mesh.scale.z = 15;
+      
+        scene.add( mesh )
+      })
+
+      
+      jsonm.load('./models/rose/rose.js', function (geometry) {
+        var material = new THREE.MeshFaceMaterial();
+
+        var i,j;
+        for (i = 1; i < 5; i++)
+        {
+          for (j = 1; j < 5; j++)
+          {
+            (function () {
+              var rose = new THREE.Mesh( geometry, material );
+
+              rose.scale.x = rose.scale.y = rose.scale.z = 0.25;
+              
+              rose.position.x = i * 5;
+              rose.position.z = j * 5;
+        
+              rose.updateMatrix();
+        
+              scene.add( rose )
+            })()
+          }
+        }
+
+      })
+    
+       // GROUND
+
+      var gt = THREE.ImageUtils.loadTexture( "images/terrain/grasslight-big.jpg" );
+      var gg = new THREE.PlaneGeometry( 1024, 1024 );
+      var gm = new THREE.MeshPhongMaterial( { color: 0xffffff, map: gt, perPixel: true } );
+      
+      var ground = new THREE.Mesh( gg, gm );
+      ground.material.map.repeat.set( 32, 32 );
+      ground.material.map.wrapS = ground.material.map.wrapT = THREE.RepeatWrapping;
+      ground.receiveShadow = true;
+      
+      scene.add( ground );
+    }
+    
+    //
+    
+    var t = 0;
+    function animate() {
+    
+      requestAnimationFrame( animate );
+    
+      render();
+      stats.update();
+    
+    }
+    
+    function render() {
+    
+      var timer = Date.now() * 0.0005;
+    
+      camera.position.x = 40;
+      camera.position.y = 60;
+      camera.position.z = 60;
+      
+      camera.lookAt( scene.position );
+    
+      renderer.render( scene, camera );
+    }
+    
+    
+  </script>
+</body>
+
+</html
